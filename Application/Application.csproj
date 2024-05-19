@@ -8,12 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Options\" />
-    <Folder Include="Features\Votes\" />
+    <Folder Include="Features\Options\Commands\" />
+    <Folder Include="Features\Options\Queries\" />
+    <Folder Include="Features\Votes\Queries\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
   </ItemGroup>
 

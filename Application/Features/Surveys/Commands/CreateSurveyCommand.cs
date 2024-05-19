@@ -1,4 +1,6 @@
-﻿using Application.Interfaces;
+﻿using Application.Features.Surveys.Dtos;
+using Application.Features.Surveys.Rules;
+using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
 using Microsoft.VisualBasic.FileIO;
@@ -12,45 +14,52 @@ namespace Application.Features.Surveys.Commands
 {
     public class CreateSurveyCommand : IRequest
     {
-        public CreateSurveyCommand(string question, string createdBy, DateTime createdDate, DateTime dueDate, Settings settings, List<Option> options)
+        public CreateSurveyCommand(string question, string createdBy, List<CreateOptionDto> options, Settings settings)
         {
             Question = question;
             CreatedBy = createdBy;
-            CreatedDate = createdDate;
-            DueDate = dueDate;
-            Settings = settings;
             Options = options;
+            Settings = settings;
         }
 
         public string Question { get; set; }
         public string CreatedBy { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime DueDate { get; set; }
+        public List<CreateOptionDto> Options { get; set; }
         public Settings Settings { get; set; }
-        public List<Option> Options { get; set; }
 
-
-        public class Handler : IRequestHandler<CreateSurveyCommand>
+        public class handler : IRequestHandler<CreateSurveyCommand>
         {
             private readonly IRepository<Survey> _repository;
+            private readonly SurveyBusinessClass _surveyBusiness;
 
-            public Handler(IRepository<Survey> repository)
+            public handler(IRepository<Survey> repository, SurveyBusinessClass surveyBusiness)
             {
                 _repository = repository;
+                _surveyBusiness = surveyBusiness;
             }
 
             public async Task Handle(CreateSurveyCommand request, CancellationToken cancellationToken)
             {
+                var options = request.Options.Select(option => new Option
+                {
+                    Description = option.Description,
+                    Type = option.Type,
+                    Order = option.Order
+                }).ToList();
+
+                _surveyBusiness.AddOption(options.Count);
+
                 await _repository.CreateAsync(new Survey
                 {
                     Question = request.Question,
                     CreatedBy = request.CreatedBy,
-                    CreatedDate = request.CreatedDate,
-                    DueDate = request.DueDate,
+                    Options = options,
+                    CreatedDate = DateTime.Now,
+                    DueDate = DateTime.Now.AddDays(1),
                     Settings = request.Settings,
-                    Options = request.Options
                 });
             }
         }
+
     }
 }

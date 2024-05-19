@@ -12,7 +12,7 @@ public class VoteConfiguration : IEntityTypeConfiguration<Vote>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).HasColumnName("id").HasColumnType("int");
         builder.Property(x => x.User).HasColumnName("user").HasColumnType("varchar(50)");
-        
+        builder.Property(x => x.IpAddress).HasColumnName("ip_address").HasColumnType("varchar(50)");
         builder.HasOne(x => x.Survey).WithMany(x => x.Votes);
         builder.HasMany(x => x.Options).WithMany(x => x.Votes);
     }

@@ -21,7 +21,7 @@ namespace Infrastructure.Repository
 
         public async Task CreateAsync(T entity)
         {
-            _context.Set<T>().Add(entity);
+            _context.Set<T>().AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
@@ -31,9 +31,14 @@ namespace Infrastructure.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<T>> GetAllAsync()
+        public async Task<List<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
         {
-            return await _context.Set<T>().ToListAsync();
+            var query = _context.Set<T>().AsQueryable();
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<T> GetByFilterAsync(Expression<Func<T, bool>> filter)
@@ -41,9 +46,15 @@ namespace Infrastructure.Repository
             return await _context.Set<T>().SingleOrDefaultAsync(filter);
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)
         {
-            return await _context.Set<T>().FindAsync(id);
+            var query = _context.Set<T>().AsQueryable();
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+            return await query.FirstOrDefaultAsync(e => EF.Property<int>(e,"Id") == id);
         }
 
         public async Task UpdateAsync(T entity)
