@@ -15,11 +15,11 @@ namespace Application.Features.Surveys.Queries
 {
     public class GetSurveyQuery : IRequest<List<GetSurveyQueryModel>>
     {
-        public class Handler : IRequestHandler<GetSurveyQuery, List<GetSurveyQueryModel>>
+        public class GetSurveyQueryHandler : IRequestHandler<GetSurveyQuery, List<GetSurveyQueryModel>>
         {
             private readonly ISurveyDbContext _context;
 
-            public Handler(ISurveyDbContext context)
+            public GetSurveyQueryHandler(ISurveyDbContext context)
             {
                 _context = context;
             }

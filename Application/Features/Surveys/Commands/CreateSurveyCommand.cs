@@ -27,12 +27,12 @@ namespace Application.Features.Surveys.Commands
         public List<CreateOptionDto> Options { get; set; }
         public Settings Settings { get; set; }
 
-        public class handler : IRequestHandler<CreateSurveyCommand>
+        public class CreateSurveyCommandHandler : IRequestHandler<CreateSurveyCommand>
         {
             private readonly IRepository<Survey> _repository;
             private readonly SurveyBusinessClass _surveyBusiness;
 
-            public handler(IRepository<Survey> repository, SurveyBusinessClass surveyBusiness)
+            public CreateSurveyCommandHandler(IRepository<Survey> repository, SurveyBusinessClass surveyBusiness)
             {
                 _repository = repository;
                 _surveyBusiness = surveyBusiness;

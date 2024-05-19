@@ -22,11 +22,11 @@ namespace Application.Features.Surveys.Queries
             Id = id;
         }
 
-        public class handler : IRequestHandler<GetSurveyByIdQuery, GetSurveyByIdQueryModel>
+        public class GetSurveyByIdQueryHandler : IRequestHandler<GetSurveyByIdQuery, GetSurveyByIdQueryModel>
         {
             private readonly ISurveyDbContext _context;
 
-            public handler(ISurveyDbContext context)
+            public GetSurveyByIdQueryHandler(ISurveyDbContext context)
             {
                 _context = context;
             }
