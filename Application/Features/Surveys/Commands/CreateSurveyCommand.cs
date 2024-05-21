@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Exceptions;
+using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
 using Microsoft.VisualBasic.FileIO;
@@ -37,7 +38,13 @@ namespace Application.Features.Surveys.Commands
             public async Task<Survey> Handle(CreateSurveyCommand request, CancellationToken cancellationToken)
             {
                 var survey = Survey.Create(request.Question, request.CreatedBy, request.Settings, request.Options);
-                _context.Surveys.Add(survey);
+
+                if (request.Options.Count < 2)
+                {
+                    throw new BusinessException("En az 2 tane seçenek ekleyiniz.",400);
+                }
+
+                await _context.Surveys.AddAsync(survey, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
 
                 return survey;
