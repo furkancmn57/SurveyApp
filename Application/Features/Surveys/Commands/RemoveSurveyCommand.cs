@@ -1,4 +1,4 @@
-﻿using Application.Features.Surveys.Dtos;
+﻿using Application.Exceptions;
 using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
@@ -19,25 +19,26 @@ namespace Application.Features.Surveys.Commands
 
         public int Id { get; set; }
 
-        public class RemoveSurveyCommandHandler : IRequestHandler<RemoveSurveyCommand>
+        public class Handler : IRequestHandler<RemoveSurveyCommand>
         {
-            private readonly IRepository<Survey> _repository;
+            private readonly ISurveyDbContext _context;
 
-            public RemoveSurveyCommandHandler(IRepository<Survey> repository)
+            public Handler(ISurveyDbContext context)
             {
-                _repository = repository;
+                _context = context;
             }
 
             public async Task Handle(RemoveSurveyCommand request, CancellationToken cancellationToken)
             {
-                var value = await _repository.GetByIdAsync(request.Id);
+                var value = await _context.Surveys.FindAsync(request.Id);
 
                 if (value == null)
                 {
-                    throw new Exception("Survey not found");
+                    throw new BusinessException("Anket Bulunamadı.",404);
                 }
 
-                await _repository.DeleteAsync(value);
+                _context.Surveys.Remove(value);
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 

@@ -3,10 +3,11 @@ using Application.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Models.Vote.Request;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/votes")]
     [ApiController]
     public class VoteController : ControllerBase
     {
@@ -17,13 +18,14 @@ namespace WebApi.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateVote(CreateVoteCommand command)
+        [HttpPost("{surveyId}")]
+        public async Task<IActionResult> UseVote([FromRoute] int surveyId, VoteCreateRequest request, CancellationToken token)
         {
             string IpAddress = HttpContext.GetIpAddress();
-            command.IpAddress = IpAddress;
-            
-            await _mediator.Send(command);
+
+            var command = new UseVoteCommand(surveyId, request.User, IpAddress, request.OptionsIds);
+
+            await _mediator.Send(command,token);
             return Ok("Oy Başarıyla Kaydedildi.");
         }
     }

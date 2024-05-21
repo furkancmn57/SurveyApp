@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Options\Commands\" />
-    <Folder Include="Features\Options\Queries\" />
     <Folder Include="Features\Votes\Queries\" />
   </ItemGroup>
 

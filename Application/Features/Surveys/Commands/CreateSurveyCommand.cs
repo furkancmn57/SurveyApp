@@ -1,6 +1,4 @@
-﻿using Application.Features.Surveys.Dtos;
-using Application.Features.Surveys.Rules;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
 using Microsoft.VisualBasic.FileIO;
@@ -12,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Surveys.Commands
 {
-    public class CreateSurveyCommand : IRequest
+    public class CreateSurveyCommand : IRequest<Survey>
     {
-        public CreateSurveyCommand(string question, string createdBy, List<CreateOptionDto> options, Settings settings)
+        public CreateSurveyCommand(string question, string createdBy, List<Option> options, Settings settings)
         {
             Question = question;
             CreatedBy = createdBy;
@@ -24,40 +22,25 @@ namespace Application.Features.Surveys.Commands
 
         public string Question { get; set; }
         public string CreatedBy { get; set; }
-        public List<CreateOptionDto> Options { get; set; }
+        public List<Option> Options { get; set; }
         public Settings Settings { get; set; }
 
-        public class CreateSurveyCommandHandler : IRequestHandler<CreateSurveyCommand>
+        public class Handler : IRequestHandler<CreateSurveyCommand, Survey>
         {
-            private readonly IRepository<Survey> _repository;
-            private readonly SurveyBusinessClass _surveyBusiness;
+            private readonly ISurveyDbContext _context;
 
-            public CreateSurveyCommandHandler(IRepository<Survey> repository, SurveyBusinessClass surveyBusiness)
+            public Handler(ISurveyDbContext context)
             {
-                _repository = repository;
-                _surveyBusiness = surveyBusiness;
+                _context = context;
             }
 
-            public async Task Handle(CreateSurveyCommand request, CancellationToken cancellationToken)
+            public async Task<Survey> Handle(CreateSurveyCommand request, CancellationToken cancellationToken)
             {
-                var options = request.Options.Select(option => new Option
-                {
-                    Description = option.Description,
-                    Type = option.Type,
-                    Order = option.Order
-                }).ToList();
+                var survey = Survey.Create(request.Question, request.CreatedBy, request.Settings, request.Options);
+                _context.Surveys.Add(survey);
+                await _context.SaveChangesAsync(cancellationToken);
 
-                _surveyBusiness.AddOption(options.Count);
-
-                await _repository.CreateAsync(new Survey
-                {
-                    Question = request.Question,
-                    CreatedBy = request.CreatedBy,
-                    Options = options,
-                    CreatedDate = DateTime.Now,
-                    DueDate = DateTime.Now.AddDays(1),
-                    Settings = request.Settings,
-                });
+                return survey;
             }
         }
 

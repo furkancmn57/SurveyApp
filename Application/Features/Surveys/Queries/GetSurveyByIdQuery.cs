@@ -1,5 +1,4 @@
-﻿using Application.Features.Surveys.Dtos;
-using Application.Features.Surveys.Model;
+﻿using Application.Exceptions;
 using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
@@ -13,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Surveys.Queries
 {
-    public class GetSurveyByIdQuery : IRequest<GetSurveyByIdQueryModel>
+    public class GetSurveyByIdQuery : IRequest<Survey>
     {
         public int Id { get; set; }
 
@@ -22,48 +21,29 @@ namespace Application.Features.Surveys.Queries
             Id = id;
         }
 
-        public class GetSurveyByIdQueryHandler : IRequestHandler<GetSurveyByIdQuery, GetSurveyByIdQueryModel>
+        public class Handler : IRequestHandler<GetSurveyByIdQuery, Survey>
         {
             private readonly ISurveyDbContext _context;
 
-            public GetSurveyByIdQueryHandler(ISurveyDbContext context)
+            public Handler(ISurveyDbContext context)
             {
                 _context = context;
             }
 
-            public async Task<GetSurveyByIdQueryModel> Handle(GetSurveyByIdQuery request, CancellationToken cancellationToken)
+            public async Task<Survey> Handle(GetSurveyByIdQuery request, CancellationToken cancellationToken)
             {
-                var value = await _context.Surveys
-                    .Include(x => x.Options)
-                     .ThenInclude(x => x.Votes)
-                     .FirstOrDefaultAsync(x => x.Id == request.Id);
+                var dbQuery = _context.Surveys.AsQueryable();
+                var survey = await dbQuery
+                    .Include(i => i.Options)
+                    .ThenInclude(i => i.Votes)
+                    .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
-                if (value == null)
+                if (survey is null)
                 {
-                    throw new Exception("Survey not found");
+                    throw new BusinessException("Anket Bulunamadı.", 404);
                 }
 
-                return new GetSurveyByIdQueryModel
-                {
-                    Id = value.Id,
-                    Question = value.Question,
-                    CreatedBy = value.CreatedBy,
-                    Options = value.Options.Select(option => new OptionDto
-                    {
-                        Id = option.Id,
-                        Description = option.Description,
-                        Type = option.Type,
-                        Order = option.Order,
-                        Votes = option.Votes.Select(vote => new VoteDto
-                        {
-                            Id = vote.Id,
-                            User = vote.User
-                        }).ToList()
-                    }).ToList(),
-                    CreatedDate = value.CreatedDate,
-                    DueDate = value.DueDate,
-                    Settings = value.Settings,
-                };
+                return survey;
             }
         }
     }

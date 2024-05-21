@@ -1,9 +1,9 @@
 using Application.Features.Surveys.Commands;
-using Application.Features.Surveys.Rules;
 using Application.Interfaces;
 using Application.Services;
 using Infrastructure.Context;
 using Infrastructure.Repository;
+using WebApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +12,6 @@ builder.Services.AddDbContext<ISurveyDbContext, SurveyAppDbContext>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddApplicationService(builder.Configuration);
 builder.Services.AddScoped(typeof(IVoteRepository<>), typeof(VoteRepository<>));
-builder.Services.AddScoped<SurveyBusinessClass>();
 
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -31,6 +30,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 
